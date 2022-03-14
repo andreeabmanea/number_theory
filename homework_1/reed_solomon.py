@@ -5,6 +5,7 @@ from math import *
 import itertools
 from sympy import Poly
 from sympy.abc import x, y
+import time
 
 
 def egcd(a, b):
@@ -23,8 +24,14 @@ def modinv(a, m):
         return x % m
 
 
-def generate_big_prime():
-    return getPrime(21)
+def gcd(n, m):
+    if m == 0:
+        return n
+    return gcd(m, n % m)
+
+
+def generate_big_prime(n: bytes):
+    return getPrime(n)
 
 
 def convert_decimal_to_base(decimal_number, base):
@@ -75,29 +82,81 @@ def alter_y(y: list, p: int):
     return z
 
 
-def compute_free_coefficient(z: list, A: list, p: int):
+def compute_free_coefficient_m1(z: list, A: list, p: int):
+    # k*(k-1) inversions
     sum = 0
     for i in A:
         A_without_i = A.copy()
         A_without_i.remove(i)
         product = 1
         for j in A_without_i:
-            if (j / (j - i)) == (j // (j - i)):
-                fraction = j / (j - i)
-            else:
-                fraction = j * (modinv((j - i) % p, p))
+            fraction = j * (modinv((j - i) % p, p))
             product = product * fraction
         product = product * z[i]
         sum = sum + product
     return sum % p
 
 
+def compute_free_coefficient_m2(z: list, A: list, p: int):
+    # k inversions
+    sum = 0
+    for i in A:
+        A_without_i = A.copy()
+        A_without_i.remove(i)
+        denominator = 1
+        numerator = 1
+        fraction = 1
+        for j in A_without_i:
+            denominator = denominator * (j - i)
+            numerator = numerator * j
+        fraction = numerator * (modinv((denominator) % p, p))
+        fraction = fraction * z[i]
+        sum = sum + fraction
+
+    return sum % p
+
+
+def least_common_multiple_of_list(A: list):
+    lcm = 1
+    for i in A:
+        lcm = lcm * i // gcd(lcm, i)
+    return lcm
+
+
+def compute_free_coefficient_m3(z: list, A: list, p: int):
+    # 1 inversion
+    denominators = []
+    numerators = []
+    for i in A:
+        A_without_i = A.copy()
+        A_without_i.remove(i)
+        denominator = 1
+        numerator = 1
+        fraction = 1
+        for j in A_without_i:
+            denominator = denominator * (j - i)
+            numerator = numerator * j
+        numerator = numerator * z[i]
+        denominators.append(denominator)
+        numerators.append(numerator)
+        least_common_multiple = least_common_multiple_of_list(denominators)
+        updated_denominators = [least_common_multiple // x for x in denominators]
+        updated_numerators = [least_common_multiple // x for x in numerators if x != 0]
+        numerator = sum(updated_numerators)
+        fraction = numerator * (modinv((least_common_multiple) % p, p))
+
+    return fraction % p
+
+
 def find_all_coefficients(n: int, k: int, z, p):
     N = [i for i in range(1, n + 1)]
     subsets = list(itertools.combinations(N, k))
     for A in subsets:
-        if int(compute_free_coefficient(z, list(A), p)) == 0:
-            print(find_polynom(z, list(A), p))
+        start_time = time.time()
+        if int(compute_free_coefficient_m1(z, list(A), p)) == 0:
+            print(f"\nsubset={A}, m={find_polynom(z, list(A), p)[:-1]}")
+            end_time = time.time()
+            print(f"It took {end_time-start_time} seconds")
 
 
 def find_polynom(z: list, A: list, p: int):
@@ -121,20 +180,21 @@ def find_polynom(z: list, A: list, p: int):
     return [x % p for x in polynom.all_coeffs()]
 
 
-# def get_m(coefficients: list):
-#     coefficients.pop()
-#     return f"m=" + str(coefficients)
+def reed_solomon_algorithm(m: int, p: int):
+
+    new_m = convert_decimal_to_base(m, p)
+    k = len(new_m)
+    n = k + 2
+    print(f"Encoding m={m} (p={p})")
+    y = encode_message(m, p)
+    print(f"y={y}\n")
+
+    z = alter_y(y, p)
+    print(f"z={z}\n")
+    z.insert(0, 0)
+
+    find_all_coefficients(n, k, z, p)
 
 
-m = 29
-p = 11
-print(f"Encoding m={m} (p={p})")
-y = encode_message(m, p)
-print(f"y={y}\n")
-
-z = alter_y(y, p)
-print(z)
-# print(get_m(find_all_coefficients(5, 3, z, p)))
-z = [0, 9, 2, 6, 5, 8]
-# A = [1, 3, 4]
-print(find_all_coefficients(5, 3, z, 11))
+reed_solomon_algorithm(29, 11)
+# reed_solomon_algorithm(29, generate_big_prime(21))
