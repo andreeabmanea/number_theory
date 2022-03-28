@@ -153,7 +153,7 @@ def find_all_coefficients(n: int, k: int, z, p):
     subsets = list(itertools.combinations(N, k))
     for A in subsets:
         start_time = time.time()
-        if int(compute_free_coefficient_m1(z, list(A), p)) == 0:
+        if int(compute_free_coefficient_m3(z, list(A), p)) == 0:
             print(f"\nsubset={A}, m={find_polynom(z, list(A), p)[:-1]}")
             end_time = time.time()
             print(f"It took {end_time-start_time} seconds")
@@ -196,5 +196,5 @@ def reed_solomon_algorithm(m: int, p: int):
     find_all_coefficients(n, k, z, p)
 
 
-reed_solomon_algorithm(29, 11)
+reed_solomon_algorithm(10000, 11)
 # reed_solomon_algorithm(29, generate_big_prime(21))
