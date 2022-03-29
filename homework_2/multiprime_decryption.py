@@ -18,9 +18,6 @@ def generate_multiprime_parameters():
     return {"p": p, "q": q, "r": r, "n": n, "phi": phi, "e": e}
 
 
-
-
-
 def encrypt_x(x, e, p, q, r):
     phi = (p - 1) * (q - 1) * (r - 1)
     n = p * q * r
@@ -61,6 +58,7 @@ def time_comparison_multiprime(x, params):
     )
 
 
-time_comparison_multiprime(68, generate_multiprime_parameters())
+if __name__ == "__main__":
+    time_comparison_multiprime(68, generate_multiprime_parameters())
 # Course example
 # time_comparison(68, {"p": 3, "q": 5, "r": 7, "n": 105, "phi": 48, "e": 11})

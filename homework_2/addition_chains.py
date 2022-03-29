@@ -1,5 +1,10 @@
 import random
-from utils import convert_decimal_to_base
+from utils import (
+    convert_decimal_to_base,
+    garner_algorithm,
+)
+from multiprime_decryption import encrypt_x, generate_multiprime_parameters
+from datetime import datetime
 
 
 def left_to_right_binary(x, n, m):
@@ -65,11 +70,57 @@ def longest_seq(x, i, w):
     return last_good_sequence
 
 
-# print(longest_seq([1, 0, 0, 1, 1, 0, 0, 1], 3))
+def find_x_with_binary(y, m, d):
+    return left_to_right_binary(y % m, d % (m - 1), m)
+
+
+def find_x_with_fixed_window(y, m, d):
+    return left_to_right_fixed_window(y % m, d % (m - 1), m)
+
+
+def decrypt_multiprime_with_binary_chain(x_encrypted, key, params):
+
+    print(f"Multipower parameters: {params}")
+    x_p = find_x_with_binary(x_encrypted, params["p"], key)
+    x_q = find_x_with_binary(x_encrypted, params["q"], key)
+    x_r = find_x_with_binary(x_encrypted, params["r"], key)
+    v = [x_p, x_q, x_r]
+    m = [params["p"], params["q"], params["r"]]
+    return f"After decryption: x={garner_algorithm(m, v)}"
+
+
+def decrypt_multiprime_with_fixed_window(x_encrypted, key, params):
+
+    print(f"Multipower parameters: {params}")
+    x_p = find_x_with_fixed_window(x_encrypted, params["p"], key)
+    x_q = find_x_with_fixed_window(x_encrypted, params["q"], key)
+    x_r = find_x_with_fixed_window(x_encrypted, params["r"], key)
+    v = [x_p, x_q, x_r]
+    m = [params["p"], params["q"], params["r"]]
+    return f"After decryption: x={garner_algorithm(m, v)}"
+
+
+def time_comparison_addition_chains(x, params):
+    print(f"Initial message: x={x}")
+    print()
+    (x_encrypted, key) = encrypt_x(
+        x, params["e"], params["p"], params["q"], params["r"]
+    )
+    start = datetime.now()
+    print(decrypt_multiprime_with_binary_chain(x_encrypted, key, params))
+    end = datetime.now()
+    print(f"Decryption with binary method took {(end - start).total_seconds()} seconds")
+    print()
+    start = datetime.now()
+    n = params["n"]
+    print(decrypt_multiprime_with_fixed_window(x_encrypted, key, params))
+    end = datetime.now()
+    print(f"Decryption with fixed window took {(end - start).total_seconds()} seconds")
+
+
+time_comparison_addition_chains(68, generate_multiprime_parameters())
 
 
 # print(left_to_right_binary(3, 5, 5))
 # print(left_to_right_fixed_window(3, 10, 17))
 # print(left_to_right_sliding_window(3, 4, 5, 3))
-# x_seq = "".join(str(integer) for integer in [1, 0, 0])
-# print(int(x_seq, 2))
