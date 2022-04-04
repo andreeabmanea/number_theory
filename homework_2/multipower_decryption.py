@@ -17,7 +17,7 @@ def generate_multipower_parameters():
         q = getPrime(1024)
     n = p * q
     phi = (pow(p, 2) - p) * (q - 1)
-    e = 17
+    e = 29
 
     return {"p": p, "q": q, "n": n, "phi": phi, "e": e}
 

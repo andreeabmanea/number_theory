@@ -19,7 +19,8 @@ def left_to_right_binary(x, n, m):
 
 
 def left_to_right_fixed_window(x, n, m):
-    beta = random.randint(3, 9)
+    beta = pow(2, random.randint(3, 15))
+
     x_list = [1]
 
     for i in range(1, beta + 1):
@@ -52,7 +53,7 @@ def left_to_right_sliding_window(x, n, m, w):
             i = i - 1
         else:
             seq = longest_seq(n_bin, i, w)
-            for l in range(1, len(seq) + 1):
+            for l in range(1, len(seq)):
                 y = y * y % m
             x_seq = int("".join(str(integer) for integer in seq), 2)
             y = y * x_seq % m
@@ -61,13 +62,14 @@ def left_to_right_sliding_window(x, n, m, w):
 
 
 def longest_seq(x, i, w):
-    last_good_sequence = [x[i]]
-    new_sequence = [x[i]]
-    for j in range(i + 1, i + w):
-        new_sequence.append(x[j])
-        if int(x[j]) == 1:
-            last_good_sequence = new_sequence.copy()
-    return last_good_sequence
+
+    j = i + w - 1
+    if j > len(x) - 1:
+        j = len(x) - 1
+    for index in range(j, i, -1):
+        if x[index] == 1:
+            break
+    return x[i:index]
 
 
 def find_x_with_binary(y, m, d):
@@ -76,6 +78,10 @@ def find_x_with_binary(y, m, d):
 
 def find_x_with_fixed_window(y, m, d):
     return left_to_right_fixed_window(y % m, d % (m - 1), m)
+
+
+def find_x_with_sliding_window(y, m, d):
+    return left_to_right_sliding_window(y % m, d % (m - 1), m, 3)
 
 
 def decrypt_multiprime_with_binary_chain(x_encrypted, key, params):
@@ -100,6 +106,17 @@ def decrypt_multiprime_with_fixed_window(x_encrypted, key, params):
     return f"After decryption: x={garner_algorithm(m, v)}"
 
 
+def decrypt_multiprime_with_sliding_window(x_encrypted, key, params):
+
+    print(f"Multipower parameters: {params}")
+    x_p = find_x_with_sliding_window(x_encrypted, params["p"], key)
+    x_q = find_x_with_sliding_window(x_encrypted, params["q"], key)
+    x_r = find_x_with_sliding_window(x_encrypted, params["r"], key)
+    v = [x_p, x_q, x_r]
+    m = [params["p"], params["q"], params["r"]]
+    return f"After decryption: x={garner_algorithm(m, v)}"
+
+
 def time_comparison_addition_chains(x, params):
     print(f"Initial message: x={x}")
     print()
@@ -117,10 +134,17 @@ def time_comparison_addition_chains(x, params):
     end = datetime.now()
     print(f"Decryption with fixed window took {(end - start).total_seconds()} seconds")
 
+    print()
+    start = datetime.now()
+    n = params["n"]
+    print(decrypt_multiprime_with_sliding_window(x_encrypted, key, params))
+    end = datetime.now()
+    print(f"Decryption with fixed window took {(end - start).total_seconds()} seconds")
 
-time_comparison_addition_chains(68, generate_multiprime_parameters())
+
+# time_comparison_addition_chains(68, generate_multiprime_parameters())
 
 
 # print(left_to_right_binary(3, 5, 5))
 # print(left_to_right_fixed_window(3, 10, 17))
-# print(left_to_right_sliding_window(3, 4, 5, 3))
+print(left_to_right_sliding_window(3, 4, 5, 3))

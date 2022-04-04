@@ -13,7 +13,7 @@ def generate_multiprime_parameters():
         r = getPrime(512)
     n = p * q * r
     phi = (p - 1) * (q - 1) * (r - 1)
-    e = 11
+    e = 29
 
     return {"p": p, "q": q, "r": r, "n": n, "phi": phi, "e": e}
 
@@ -27,7 +27,7 @@ def encrypt_x(x, e, p, q, r):
 
 def decrypt_multiprime(x_encrypted, key, params):
 
-    print(f"Multipower parameters: {params}")
+    print(f"Multiprime parameters: {params}")
     x_p = find_x(x_encrypted, params["p"], key)
     x_q = find_x(x_encrypted, params["q"], key)
     x_r = find_x(x_encrypted, params["r"], key)
