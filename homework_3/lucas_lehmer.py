@@ -4,6 +4,7 @@ from Crypto.Util.number import getPrime
 from datetime import datetime
 
 
+
 def test_primality(s: int, method: str = None):
     if s < 3:
         raise Exception("s must be greater than 3")
